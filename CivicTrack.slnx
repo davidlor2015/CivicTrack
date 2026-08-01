@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="CivicTrack.Web.Tests/CivicTrack.Web.Tests/CivicTrack.Web.Tests.csproj" />
   <Project Path="CivicTrack.Web/CivicTrack.Web.csproj" />
 </Solution>
