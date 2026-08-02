@@ -63,6 +63,26 @@ namespace CivicTrack.Web.Domain.Entities
             Status = RequestStatus.InProgress;
         }
 
+        public void WaitOnCustomer()
+        {
+            if (Status != RequestStatus.InProgress)
+            {
+                throw new InvalidOperationException("Request must be in progress before waiting on the customer.");
+            }
+
+            Status = RequestStatus.WaitingOnCustomer;
+        }
+
+        public void ResumeProgress()
+        {
+            if (Status != RequestStatus.WaitingOnCustomer)
+            {
+                throw new InvalidOperationException("Request must be waiting on customer to resume progress.");
+            }
+
+            Status = RequestStatus.InProgress;
+        }
+
         public void Resolve()
         {
             if (Status != RequestStatus.InProgress)

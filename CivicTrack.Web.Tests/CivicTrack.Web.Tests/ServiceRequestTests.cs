@@ -262,5 +262,35 @@ namespace CivicTrack.Web.Tests
 
             Assert.Equal(RequestStatus.Open, request.Status);
         }
+        [Fact]
+        public void WaitOnCustomer_WhenStatusIsNew_ThrowsInvalidOperationException()
+        {
+            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", "Electrical");
+
+            Assert.Throws<InvalidOperationException>(() => request.WaitOnCustomer());
+        }
+        [Fact]
+        public void WaitingOnCustomer_WhenStatusIsInProgress_ChangeStatusToWaitingOnCustomer()
+        {
+            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", "Electrical");
+
+            request.AssignTo("employee-123");
+            request.StartProgress();
+            request.WaitOnCustomer();
+
+            Assert.Equal(RequestStatus.WaitingOnCustomer, request.Status);
+        }
+        [Fact]
+        public void InProgress_WhenStatusIsWaitingOnCustomer_ChangeStatusToResumeProgress()
+        {
+            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", "Electrical");
+
+            request.AssignTo("employee-123");
+            request.StartProgress();
+            request.WaitOnCustomer();
+            request.ResumeProgress();
+
+            Assert.Equal(RequestStatus.InProgress, request.Status);
+        }
     }
 }
