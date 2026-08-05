@@ -11,13 +11,13 @@ namespace CivicTrack.Web.Tests
         {
             const string title = "Broken street lamp";
             const string description = "Street lamp not turning on";
-            const string category = "Electrical";
+            const int serviceCategoryId = 1;
 
-            var request = new ServiceRequest(title, description, category);
+            var request = new ServiceRequest(title, description, serviceCategoryId);
 
             Assert.Equal(title, request.Title);
             Assert.Equal(description, request.Description);
-            Assert.Equal(category, request.Category);
+            Assert.Equal(serviceCategoryId, request.ServiceCategoryId);
             Assert.Equal(RequestStatus.New, request.Status);
             Assert.Equal(RequestPriority.Medium, request.Priority);
             Assert.Null(request.AssignedEmployeeId);
@@ -26,9 +26,9 @@ namespace CivicTrack.Web.Tests
         public void Constructor_WithNullTitle_ThrowsArgumentException()
         {
             const string description = "Street lamp not turning on";
-            const string category = "Electrical";
+            const int serviceCategoryId = 1;
 
-            var exception = Assert.Throws<ArgumentException>(() => new ServiceRequest(null!, description, category));
+            var exception = Assert.Throws<ArgumentException>(() => new ServiceRequest(null!, description, serviceCategoryId));
 
             Assert.Equal("title", exception.ParamName);
         }
@@ -36,9 +36,9 @@ namespace CivicTrack.Web.Tests
         public void Constructor_WithWhiteSpaceTitle_ThrowsArgumentException()
         {
             const string description = "Street lamp not turning on";
-            const string category = "Electrical";
+            const int serviceCategoryId = 1;
 
-            var exception = Assert.Throws<ArgumentException>(() => new ServiceRequest(" ", description, category));
+            var exception = Assert.Throws<ArgumentException>(() => new ServiceRequest(" ", description, serviceCategoryId));
 
             Assert.Equal("title", exception.ParamName);
         }
@@ -46,9 +46,9 @@ namespace CivicTrack.Web.Tests
         public void Constructor_WithBlankDescription_ThrowsArgumentException()
         {
             const string title = "Broken streetlamp";
-            const string category = "Electrical";
+            const int serviceCategoryId = 1;
 
-            var exception = Assert.Throws<ArgumentException>(() => new ServiceRequest(title, "", category));
+            var exception = Assert.Throws<ArgumentException>(() => new ServiceRequest(title, "", serviceCategoryId));
 
             Assert.Equal("description", exception.ParamName);
         }
@@ -56,42 +56,45 @@ namespace CivicTrack.Web.Tests
         public void Constructor_WithWhiteSpaceDescription_ThrowsArgumentException()
         {
             const string title = "Broken streetlamp";
-            const string category = "Electrical";
+            const int serviceCategoryId = 1;
 
-            var exception = Assert.Throws<ArgumentException>(() => new ServiceRequest(title, " ", category));
+            var exception = Assert.Throws<ArgumentException>(() => new ServiceRequest(title, " ", serviceCategoryId));
 
             Assert.Equal("description", exception.ParamName);
         }
         [Fact]
-        public void Constructor_WithBlankCategory_ThrowsArgumentException()
+        public void Constructor_WithZeroServiceCategoryId_ThrowsArgumentOutOfRangeException()
         {
-            const string title = "Broken streetlamp";
-            const string description = "Street lamp not turning on";
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+                new ServiceRequest(
+                    "Broken streetlamp",
+                    "Street lamp not turning on",
+                    0));
 
-            var exception = Assert.Throws<ArgumentException>(() => new ServiceRequest(title, description, ""));
-
-            Assert.Equal("category", exception.ParamName);
+            Assert.Equal("serviceCategoryId", exception.ParamName);
         }
+
         [Fact]
-        public void Constructor_WithWhiteSpaceCategory_ThrowsArgumentException()
+        public void Constructor_WithNegativeServiceCategoryId_ThrowsArgumentOutOfRangeException()
         {
-            const string title = "Broken streetlamp";
-            const string description = "Street lamp not turning on";
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+                new ServiceRequest(
+                    "Broken streetlamp",
+                    "Street lamp not turning on",
+                    -1));
 
-            var exception = Assert.Throws<ArgumentException>(() => new ServiceRequest(title, description, " "));
-
-            Assert.Equal("category", exception.ParamName);
+            Assert.Equal("serviceCategoryId", exception.ParamName);
         }
         [Fact]
         public void AssignTo_WithValidEmployeeId_AssignsEmployeeAndOpenRequest()
         {
             const string title = "Broken streetlamp";
             const string description = "Street lamp not turning on";
-            const string category = "Electrical";
+            const int serviceCategoryId = 1;
             const string employee = "employee1";
 
 
-            var request = new ServiceRequest(title, description, category);
+            var request = new ServiceRequest(title, description, serviceCategoryId);
             request.AssignTo(employee);
 
             Assert.Equal(RequestStatus.Open, request.Status);
@@ -102,10 +105,10 @@ namespace CivicTrack.Web.Tests
         {
             const string title = "Broken streetlamp";
             const string description = "Street lamp not turning on";
-            const string category = "Electrical";
+            const int serviceCategoryId = 1;
 
 
-            var request = new ServiceRequest(title, description, category);
+            var request = new ServiceRequest(title, description, serviceCategoryId);
             var exception = Assert.Throws<ArgumentException>(() => request.AssignTo(null!));
 
             Assert.Null(request.AssignedEmployeeId);
@@ -117,9 +120,9 @@ namespace CivicTrack.Web.Tests
         {
             const string title = "Broken streetlamp";
             const string description = "Street lamp not turning on";
-            const string category = "Electrical";
+            const int serviceCategoryId = 1;
 
-            var request = new ServiceRequest(title, description, category);
+            var request = new ServiceRequest(title, description, serviceCategoryId);
             var exception = Assert.Throws<ArgumentException>(() => request.AssignTo(" "));
 
             Assert.Null(request.AssignedEmployeeId);
@@ -130,7 +133,7 @@ namespace CivicTrack.Web.Tests
         [Fact]
         public void AssignTo_WithInvalidStatusCancelled_ThrowsInvalidOperationException()
         {
-            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", "Electrical");
+            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", 1);
 
             request.Cancel();
 
@@ -143,7 +146,7 @@ namespace CivicTrack.Web.Tests
         [Fact]
         public void StartProgress_WhenStatusIsNew_ThrowsInvalidOperationException()
         {
-            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", "Electrical");
+            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", 1);
 
 
             Assert.Throws<InvalidOperationException>(() => request.StartProgress());
@@ -153,7 +156,7 @@ namespace CivicTrack.Web.Tests
         [Fact]
         public void StartProgress_WhenStatusIsOpen_ChangesStatusToInProgress()
         {
-            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", "Electrical");
+            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", 1);
 
             request.AssignTo("employee-123");
             request.StartProgress();
@@ -164,7 +167,7 @@ namespace CivicTrack.Web.Tests
         [Fact]
         public void Resolve_WhenStatusIsNew_ThrowsInvalidOperationException()
         {
-            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", "Electrical");
+            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", 1);
 
             Assert.Equal(RequestStatus.New, request.Status);
             Assert.Throws<InvalidOperationException>(() => request.Resolve());
@@ -173,7 +176,7 @@ namespace CivicTrack.Web.Tests
         [Fact]
         public void Resolve_WhenStatusIsOpen_ThrowsInvalidOperationException()
         {
-            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", "Electrical");
+            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", 1);
 
             request.AssignTo("employee-123");
 
@@ -184,7 +187,7 @@ namespace CivicTrack.Web.Tests
         [Fact]
         public void Resolve_WhenStatusIsInProgress_ChangesStatusToResolved()
         {
-            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", "Electrical");
+            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", 1);
             request.AssignTo("employee-123");
             request.StartProgress();
             request.Resolve();
@@ -194,7 +197,7 @@ namespace CivicTrack.Web.Tests
         [Fact]
         public void Close_WhenStatusIsNotResolved_ThrowsInvalidOperationException()
         {
-            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", "Electrical");
+            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", 1);
 
             Assert.Throws<InvalidOperationException>(() => request.Close());
 
@@ -202,7 +205,7 @@ namespace CivicTrack.Web.Tests
         [Fact]
         public void Close_WhenStatusIsResolved_ChangesStatusToClosed()
         {
-            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", "Electrical");
+            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", 1);
 
             request.AssignTo("employee-123");
             request.StartProgress();
@@ -214,7 +217,7 @@ namespace CivicTrack.Web.Tests
         [Fact]
         public void Cancel_WhenStatusIsNotNewOrOpen_ThrowsInvalidOperationException()
         {
-            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", "Electrical");
+            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", 1);
 
             request.AssignTo("employee-123");
             request.StartProgress();
@@ -226,7 +229,7 @@ namespace CivicTrack.Web.Tests
         [Fact]
         public void Cancel_WhenStatusIsNew_ChangesStatusToCancelled()
         {
-            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", "Electrical");
+            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", 1);
 
             request.Cancel();
 
@@ -235,7 +238,7 @@ namespace CivicTrack.Web.Tests
         [Fact]
         public void Cancel_WhenStatusIsOpen_ChangeStatusToCancelled()
         {
-            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", "Electrical");
+            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", 1);
             request.AssignTo("employee-123");
             request.Cancel();
 
@@ -244,7 +247,7 @@ namespace CivicTrack.Web.Tests
         [Fact]
         public void Reopen_WhenStatusIsNotClosed_ThrowsInvalidOperationException()
         {
-            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", "Electrical");
+            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", 1);
 
             Assert.Throws<InvalidOperationException>(() => request.Reopen());
 
@@ -252,7 +255,7 @@ namespace CivicTrack.Web.Tests
         [Fact]
         public void Reopen_WhenStatusIsClosed_ChangesStatusToOpen()
         {
-            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", "Electrical");
+            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", 1);
 
             request.AssignTo("employee-123");
             request.StartProgress();
@@ -265,14 +268,14 @@ namespace CivicTrack.Web.Tests
         [Fact]
         public void WaitOnCustomer_WhenStatusIsNew_ThrowsInvalidOperationException()
         {
-            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", "Electrical");
+            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", 1);
 
             Assert.Throws<InvalidOperationException>(() => request.WaitOnCustomer());
         }
         [Fact]
         public void WaitingOnCustomer_WhenStatusIsInProgress_ChangeStatusToWaitingOnCustomer()
         {
-            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", "Electrical");
+            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", 1);
 
             request.AssignTo("employee-123");
             request.StartProgress();
@@ -283,7 +286,7 @@ namespace CivicTrack.Web.Tests
         [Fact]
         public void InProgress_WhenStatusIsWaitingOnCustomer_ChangeStatusToResumeProgress()
         {
-            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", "Electrical");
+            var request = new ServiceRequest("Broken streetlamp", "Streetlamp not turning on", 1);
 
             request.AssignTo("employee-123");
             request.StartProgress();
