@@ -20,6 +20,14 @@ namespace CivicTrack.Web.Services.ServiceRequests
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(request);
+
+            if (request.ServiceCategoryId <= 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(request.ServiceCategoryId),
+                    "Service category ID must be greater than zero.");
+            }
+
             bool categoryIsAvailable = await _dbContext.ServiceCategories.AnyAsync(
                 category =>
                     category.Id == request.ServiceCategoryId &&

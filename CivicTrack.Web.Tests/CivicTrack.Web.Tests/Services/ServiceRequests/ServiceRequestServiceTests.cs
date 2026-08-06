@@ -105,5 +105,78 @@ namespace CivicTrack.Web.Tests.Services.ServiceRequests
             Assert.Equal(0, requestCount);
 
         }
+        [Fact]
+        public async Task CreateAsync_WhenTitleIsBlank_ThrowsArgumentException()
+        {
+            await using ApplicationDbContext dbContext = CreateDbContext();
+
+            var category = new ServiceCategory("Road Repair");
+
+            dbContext.ServiceCategories.Add(category);
+
+            await dbContext.SaveChangesAsync();
+
+            var service = new ServiceRequestService(dbContext);
+            var request = new CreateServiceRequestDto
+            {
+                Title = " ",
+                Description = "There is a large pothole near intersection",
+                ServiceCategoryId = category.Id
+            };
+
+            await Assert.ThrowsAsync<ArgumentException>(
+                () => service.CreateAsync(request));
+
+            int requestCount = await dbContext.ServiceRequests.CountAsync();
+
+            Assert.Equal(0, requestCount);
+        }
+        [Fact]
+        public async Task CreateAsync_WhenDescriptionIsBlank_ThrowsArgumentException()
+        {
+            await using ApplicationDbContext dbContext = CreateDbContext();
+            var category = new ServiceCategory("Road Repair");
+
+            dbContext.ServiceCategories.Add(category);
+
+            await dbContext.SaveChangesAsync();
+
+            var service = new ServiceRequestService(dbContext);
+            var request = new CreateServiceRequestDto
+            {
+                Title = "Road Repair",
+                Description = " ",
+                ServiceCategoryId = category.Id
+            };
+
+            await Assert.ThrowsAsync<ArgumentException>(
+                () => service.CreateAsync(request));
+
+            int requestCount = await dbContext.ServiceRequests.CountAsync();
+            Assert.Equal(0, requestCount);
+        }
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task CreateAsync_WhenCategoryIdIsZero_ThrowsArgumentOutOfRangeException(int serviceCategoryId)
+        {
+            await using ApplicationDbContext dbContext = CreateDbContext();
+
+            await dbContext.SaveChangesAsync();
+
+            var service = new ServiceRequestService(dbContext);
+            var request = new CreateServiceRequestDto
+            {
+                Title = "Road Repair",
+                Description = "There is a large pothole on the intersection",
+                ServiceCategoryId = serviceCategoryId
+            };
+
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
+                () => service.CreateAsync(request));
+
+            int requestCount = await dbContext.ServiceRequests.CountAsync();
+            Assert.Equal(0, requestCount);
+        }
     }
 }
